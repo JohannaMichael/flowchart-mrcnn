@@ -88,9 +88,8 @@ class FlowchartDataset(utils.Dataset):
         subset: Subset to load: TrainingImages or TestingImages
         """
 
-        file = open("./samples/flowchart/flowchart_classes.txt", "r")
-        flowchart_symbols = file.readlines()
-        file.close()
+        flowchart_symbols = ["terminal_start", "flowline", "input", "decision", "process", "terminal_end",
+                             "process_end", "process_start", "connector", "document", "terminal"]
         i = 0
         for symbol in flowchart_symbols:
             i += 1
