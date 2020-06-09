@@ -1,0 +1,11 @@
+terminal_start
+flowline
+input
+decision
+process
+terminal_end
+process_end
+process_start
+connector
+document
+terminal
