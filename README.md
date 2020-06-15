@@ -1,55 +1,51 @@
 # Flowchart2Code
 ## with Mask R-CNN Neural Network
 
-This is an example showing the use of Mask RCNN in a real application.
-We train the model to detect balloons only, and then we use the generated 
-masks to keep balloons in color while changing the rest of the image to
-grayscale.
+This project aims to detect and 'translate' flowcharts into simple pseudo code.
+The approach to this task is as follows:
 
+1. Detect, identify and create masks of all possible symbols and objects in a flowchart
+2. According to the given flowchart, extract the masks and sort them in the correct order.
 
-[This blog post](https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46) describes this sample in more detail.
+Step 1. is achieved by a deep neural network (Mask R-CNN), which can not only detect objects
+in an image, but also identify all specific pixels that belong to the objects. Below 
+is an example of a flowchart where almost all flowchart symbols where detected. The masks are shown in different colors
+for identification. The masks also have bounding boxes with the identified labels of the symbol.
 
 ![Flowchart Symbol Recognition](/assets/flowchart_symbols_recognition.PNG)
+Ideally, the correct order for this flowchart would be: 1.
 
+The code that is used for the Neural Network is based on the Matterport Mask-RCNN
+implementation, which you can find [here](https://github.com/matterport/Mask_RCNN).
 
-## Installation
-From the [Releases page](https://github.com/matterport/Mask_RCNN/releases) page:
-1. Download `mask_rcnn_balloon.h5`. Save it in the root directory of the repo (the `mask_rcnn` directory).
-2. Download `balloon_dataset.zip`. Expand it such that it's in the path `mask_rcnn/datasets/balloon/`.
+Step 2. is still partly in progress. Until now, the right order of the flowchart symbols is found by
+starting with the start-symbol (ideally already found by the neural network) and then finding
+other flowchart symbols that overlap or are nearest to the start symbol. After the flowchart order is found, one can then translate these symbols into pseudo code.
 
-## Apply color splash using the provided weights
-Apply splash effect on an image:
+This project still holds lots of room for improvement. Some of the main ones are:
 
-```bash
-python3 balloon.py splash --weights=/path/to/mask_rcnn/mask_rcnn_balloon.h5 --image=<file name or URL>
-```
+1. Involving OCR when detecting the flowchart symbols. Text is often also used to determine the flow of the flowchart
+(especially after a decision).
+2. More flowchart data + annotations. Until now I only fed 20 annotated flowcharts into the model.
+More data might also raise the chance of detecting better/more flowlines (arrows), for example.
+3. Another neural network, which can sort the flowchart symbols into their correct order/flow.
 
-Apply splash effect on a video. Requires OpenCV 3.2+:
+### Installation/Usage
+1. The model that is used until now is in the root directory of the project. It is called `mask_rcnn_flowchart.h5`.
+You can set the path to the model in the file `inspect_flowchart_model.ipynb`.
+2. Due to copyright issues I do not want to upload flowchart images that I used to train and test the model. 
+But for testing the model, you can use any flowchart found online. Or for building ones own flowchart training dataset,
+look into [this tutorial](https://www.pyimagesearch.com/2017/12/04/how-to-create-a-deep-learning-dataset-using-google-images/).
+I used the [VGG Image Annotator](http://www.robots.ox.ac.uk/~vgg/software/via/) by the University of Oxford for flowchart symbol annotation.
 
-```bash
-python3 balloon.py splash --weights=/path/to/mask_rcnn/mask_rcnn_balloon.h5 --video=<file name or URL>
-```
+### FLowchart Code
 
+Look into `samples/flowchart/flowchart.py` to find the specific code and configuration for the project. The code
+basically inherits from `mrcnn/`.
 
-## Run Jupyter notebooks
-Open the `inspect_balloon_data.ipynb` or `inspect_balloon_model.ipynb` Jupter notebooks. You can use these notebooks to explore the dataset and run through the detection pipelie step by step.
+### Run Jupyter notebooks
+Open the `inspect_flowchart_data.ipynb` or `inspect_flowchart_model.ipynb` Jupyter Notebooks. 
+You can use these notebooks to explore the dataset and model.
 
-## Train the Balloon model
-
-Train a new model starting from pre-trained COCO weights
-```
-python3 balloon.py train --dataset=/path/to/balloon/dataset --weights=coco
-```
-
-Resume training a model that you had trained earlier
-```
-python3 balloon.py train --dataset=/path/to/balloon/dataset --weights=last
-```
-
-Train a new model starting from ImageNet weights
-```
-python3 balloon.py train --dataset=/path/to/balloon/dataset --weights=imagenet
-```
-
-The code in `balloon.py` is set to train for 3K steps (30 epochs of 100 steps each), and using a batch size of 2. 
+The code in `flowchart.py` is set to train for 3K steps (30 epochs of 100 steps each), and using a batch size of 2. 
 Update the schedule to fit your needs.
