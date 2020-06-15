@@ -50,7 +50,7 @@ I used the [VGG Image Annotator](http://www.robots.ox.ac.uk/~vgg/software/via/) 
 
 `pip install -r requirements.txt`
 
-Note: Use Tensorflow 1.14.0 (Version 2 of Tensorflow is not yet supported by the Matterport Mask R-CNN Code). Also
+Note: Use Tensorflow 1.14.0 or 1.15.0 (Version 2 of Tensorflow is not yet supported by the Matterport Mask R-CNN Code). Also
 best to use GPU version of Tensorflow.
 
 3. Run setup from the repository root directory
