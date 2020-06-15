@@ -4,7 +4,7 @@
 This project aims to detect and 'translate' flowcharts into simple pseudo code.
 The approach to this task is as follows:
 
-1. Detect, identify and create masks of all possible symbols and objects in a flowchart
+1. Detect, identify and create masks of all possible symbols and objects in a flowchart.
 2. According to the given flowchart, extract the masks and sort them in the correct order.
 
 Step 1. is achieved by a deep neural network (Mask R-CNN), which can not only detect objects
@@ -13,19 +13,21 @@ is an example of a flowchart where almost all flowchart symbols where detected. 
 for identification. The masks also have bounding boxes with the identified labels of the symbol.
 
 ![Flowchart Symbol Recognition](/assets/flowchart_symbols_recognition.PNG)
-Ideally, the correct order for this flowchart would be: 
-1.terminal_start 2.flowline 3.input 4.flowline 5.input 6.flowline
-7.decision 8.flowline 9.flowline 10.input 11. flowline
 
 The code that is used for the Neural Network is based on the Matterport Mask-RCNN
 implementation, which you can find [here](https://github.com/matterport/Mask_RCNN).
 
 Step 2. is still partly in progress. Until now, the right order of the flowchart symbols is found by
 starting with the start-symbol (ideally already found by the neural network) and then finding
-other flowchart symbols that overlap or are nearest to the start symbol. After the flowchart order is found, one can then translate these symbols into pseudo code.
+other flowchart symbols that overlap or are nearest to the start symbol. 
+This step is repeated for every symbol until the end of the flowchart is reached.
+After the flowchart order is found, one can then translate these symbols into pseudo code.
+
+Ideally, the correct order for the flowchart above would be: 
+1.terminal_start 2.flowline 3.input 4.flowline 5.input 6.flowline
+7.decision 8.flowline 9.flowline 10.input 11. flowline
 
 This project still holds lots of room for improvement. Some of the main ones are:
-
 1. Involving OCR when detecting the flowchart symbols. Text is often also used to determine the flow of the flowchart
 (especially after a decision).
 2. More flowchart data + annotations. Until now I only fed 20 annotated flowcharts into the model.
