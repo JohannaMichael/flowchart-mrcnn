@@ -1,5 +1,5 @@
 # Flowchart2Code
-## with Mask R-CNN Neural Network
+## with Mask R-CNN
 
 This project aims to detect and 'translate' flowcharts into simple pseudo code.
 The approach to this task is as follows:
