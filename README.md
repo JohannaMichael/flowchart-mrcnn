@@ -9,7 +9,7 @@ grayscale.
 
 [This blog post](https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46) describes this sample in more detail.
 
-[Flowchart Symbol Recognition](/assets/flowchart_symbols_recognition.PNG)
+![Flowchart Symbol Recognition](/assets/flowchart_symbols_recognition.PNG)
 
 
 ## Installation
