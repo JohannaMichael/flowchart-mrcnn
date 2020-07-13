@@ -176,7 +176,6 @@ class FlowchartDataset(utils.Dataset):
 
         # Assign class_ids by reading class_names
         class_ids = np.zeros([len(info["polygons"])])
-        # In the surgery dataset, pictures are labeled with name 'a' and 'r' representing arm and ring.
         for i, p in enumerate(flowchart_symbols):
             # "name" is the attributes name decided when labeling, etc. 'region_attributes': {name:'a'}
             if p['flowchart_symbols'] == 'terminal_start':
@@ -203,8 +202,6 @@ class FlowchartDataset(utils.Dataset):
                 class_ids[i] = 11
             # assert code here to extend to other labels
         class_ids = class_ids.astype(int)
-        # Return mask, and array of class IDs of each instance. Since we have
-        # one class ID only, we return an array of 1s
         return mask.astype(np.bool), class_ids
 
     def image_reference(self, image_id):
