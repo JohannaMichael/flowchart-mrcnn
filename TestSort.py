@@ -3,59 +3,106 @@ from __future__ import print_function
 import glob
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Activation
+from keras.layers import Dense, Dropout, Flatten, Activation, Conv2D, MaxPooling2D, concatenate
 from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.callbacks import ModelCheckpoint
 from keras.models import model_from_json
-from keras import backend as K
+from keras import backend as K, Model
 import numpy as np
+from keras.preprocessing import image
+import matplotlib.pyplot as plt
 
 pathToTrainImages = './FlowchartDataMRCNN/TrainingImages/'
 # Create a list of all image names in the directory
 img_names = glob.glob(pathToTrainImages + '*.jpg')
 
 train_images = []
+x_train_pics = []
 
 for i in img_names:  # img is list of full path names of all images
     train_images.append(i)  # Add it to the list of train images
 
-print(train_images)
+for image_path in train_images:
+    # Convert all the images to size 299x299 as expected by the inception v3 model
+    img = image.load_img(image_path, grayscale=True, target_size=(500, 500))
+    # print(np.shape(img))
+    # Convert PIL image to numpy array
+    x = image.img_to_array(img)
+    x_train_pics.append(x)
 
 
+def create_cnn(width, height, depth):
+    # initialize the input shape and channel dimension, assuming
+    # TensorFlow/channels-last ordering
+    input_shape = (height, width, depth)
+    model = Sequential()
+    model.add(Conv2D(32, kernel_size=(3, 3),
+                     activation='relu',
+                     input_shape=input_shape))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(128))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128))
+    model.add(Activation('relu'))
+    return model
 
 
+def create_mlp(dim):
+    model = Sequential()
+    model.add(Dense(128, input_shape=(dim,), activation="relu"))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.3))
+    model.add(Dense(128))
+    model.add(Activation('relu'))
+    return model
 
 
+mlp = create_mlp(43)
+cnn = create_cnn(500, 500, 1)
+combinedInput = concatenate([mlp.output, cnn.output])
+x = Dense(128, activation="relu")(combinedInput)
+x = Dense(43)(x)
+model = Model(inputs=[mlp.input, cnn.input], outputs=x)
+
+model.compile(loss=keras.losses.mean_squared_error,
+              optimizer=keras.optimizers.Adadelta(),
+              metrics=['accuracy'])
+# train the model
+print("[INFO] training model...")
+model.fit(
+    x=[x_train, x_train_pics], y=y_train,
+    epochs=10, batch_size=8)
+# make predictions on the testing data
+print("[INFO] predicting house prices...")
+# preds = model.predict([testAttrX, testImagesX])
 
 
+n = 100000
+x_train = np.zeros((n, 43))
+for i in range(n):
+    x_train[i, :] = np.random.choice(13, 43, replace=True)
 
+# x_train = x_train.reshape(n, 4, 1)
+y_train = np.sort(x_train, axis=1)
 
+n = 1000
+x_test = np.zeros((n, 43))
+for i in range(n):
+    x_test[i, :] = np.random.choice(13, 43, replace=True)
 
+# x_test = x_test.reshape(n, 4, 1)
+y_test = np.sort(x_test, axis=1)
 
-#
-#
-# n = 100000
-# x_train = np.zeros((n, 43))
-# for i in range(n):
-#     x_train[i, :] = np.random.choice(13, 43, replace=True)
-#
-# # x_train = x_train.reshape(n, 4, 1)
-# y_train = np.sort(x_train, axis=1)
-#
-# n = 1000
-# x_test = np.zeros((n, 43))
-# for i in range(n):
-#     x_test[i, :] = np.random.choice(13, 43, replace=True)
-#
-# # x_test = x_test.reshape(n, 4, 1)
-# y_test = np.sort(x_test, axis=1)
-#
-# print(x_train[0])
-# print(y_train[0])
-# print(x_train.shape)
-# print(y_train.shape)
-#
-# input_shape = (43,)
+print(x_train[0])
+print(y_train[0])
+print(x_train.shape)
+print(y_train.shape)
+
+input_shape = (43,)
 #
 # model = Sequential()
 # model.add(Dense(128, input_shape=input_shape))
@@ -63,8 +110,8 @@ print(train_images)
 # model.add(Dropout(0.3))
 # model.add(Dense(128))
 # model.add(Activation('relu'))
-# model.add(Dropout(0.15))
-# model.add(Dense(43))
+# # model.add(Dropout(0.15))
+# # model.add(Dense(43))
 #
 # model.compile(loss=keras.losses.mean_squared_error,
 #               optimizer=keras.optimizers.Adadelta(),
