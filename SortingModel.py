@@ -1,16 +1,36 @@
 import json
 import os
-
-import keras
 import skimage.io
 import numpy as np
 import tensorflow as tf
 
-from keras.models import Model
-from keras.layers import Input, Dense, Dropout
-from keras.utils import to_categorical
-from sklearn.model_selection import train_test_split
-from keras.callbacks import EarlyStopping
+
+def load_doc(filename_data_input):
+    # open the file as read only
+    file = open(filename_data_input, 'r')
+    # read all text
+    text = file.read()
+    # close the file
+    file.close()
+    return text
+
+
+def load_descriptions(data):
+    sorted_flowchart_array = []
+    # process lines
+    for line in data.split('\n'):
+        # split lines by white space
+        tokens = line.split()
+        int_tokens = []
+        for symbols in tokens:
+            int_tokens.append(int(symbols))
+        sorted_flowchart_array.append(int_tokens)
+    return sorted_flowchart_array
+
+
+filename = "./FlowchartDataMRCNN/TrainingImages/flowchart_symbol_order.txt"
+doc = load_doc(filename)
+sorted_array = load_descriptions(doc)
 
 flowcharts_symbols_array = []
 
@@ -28,14 +48,11 @@ for a in annotations:
     single_flowchart_symbol_array = []
     flowchart_symbols = [r['region_attributes'] for r in a['regions']]
 
-    # load_mask() needs the image size to convert polygons to masks.
-    # Unfortunately, VIA doesn't include it in JSON, so we must read
-    # the image. This is only managable since the dataset is tiny.
     image_path = os.path.join(dataset_dir, a['filename'])
     image = skimage.io.imread(image_path)
     height, width = image.shape[:2]
     for i, p in enumerate(flowchart_symbols):
-        # "name" is the attributes name decided when labeling, etc. 'region_attributes': {name:'a'}
+
         if p['flowchart_symbols'] == 'terminal_start':
             single_flowchart_symbol_array.insert(i, 1)
         elif p['flowchart_symbols'] == 'flowline':
@@ -59,33 +76,18 @@ for a in annotations:
         elif p['flowchart_symbols'] == 'terminal':
             single_flowchart_symbol_array.insert(i, 11)
     flowcharts_symbols_array.append(single_flowchart_symbol_array)
-# -----------------Model starts------------------
 
-n = 100000
-x_train = np.zeros((n, 13))
-for i in range(n):
-    x_train[i, :] = np.random.permutation(13)
-
-padded_inputs = tf.keras.preprocessing.sequence.pad_sequences(
+padded_flowchart_symbols = tf.keras.preprocessing.sequence.pad_sequences(
     flowcharts_symbols_array, padding="post"
 )
-x_train_sorted = np.sort(x_train, axis=1)
-padded_inputs_sorted = np.sort(padded_inputs, axis=1)
-print(x_train_sorted)
-print(x_train.shape)
-y_train = np.zeros((10, 13,))
-print(y_train)
 
-# i = Input(shape=(43,))
-# a = Dense(1024, activation='relu')(i)
-# b = Dense(512, activation='relu')(a)
-# ba = Dropout(0.3)(b)
-# c = Dense(256, activation='relu')(ba)
-# d = Dense(128, activation='relu')(c)
-# o = Dense(43)(d)
-#
-# model = Model(inputs=i, outputs=o)
-#
-# model.compile(optimizer=keras.optimizers.Adadelta(), loss=keras.losses.mean_squared_error, metrics=['accuracy'])
-#
-# model.fit(padded_inputs, padded_inputs_sorted, epochs=15, batch_size=8)
+padded_sorted_flowchart_symbols = tf.keras.preprocessing.sequence.pad_sequences(
+    sorted_array, padding="post"
+)
+
+print('Flowcharts Array: ')
+print(padded_flowchart_symbols)
+print(type(padded_flowchart_symbols))
+print('Sorted Flowcharts Array: ')
+print(padded_sorted_flowchart_symbols)
+print(type(padded_sorted_flowchart_symbols))
