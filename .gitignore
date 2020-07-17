@@ -2,6 +2,7 @@
 datasets/
 logs/
 *.h5
+model_sorting_weights/
 results/
 temp/
 test/
