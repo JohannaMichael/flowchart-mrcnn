@@ -1,8 +1,10 @@
 from __future__ import print_function
 import glob
+from datetime import datetime
+
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Activation, Conv2D, MaxPooling2D, concatenate
+from keras.layers import Dense, Dropout, Flatten, Activation, Conv2D, MaxPooling2D, concatenate, Masking
 from keras import backend as K, Model
 import numpy as np
 from keras.preprocessing import image
@@ -105,9 +107,12 @@ for image_path in train_images:
     x_train_pics.append(x)
 
 print(np.shape(x_train_pics))
+x_train_pics = np.asarray(x_train_pics)
+print(x_train_pics.shape)
+x_train_pics = x_train_pics / 255.0
+# print(x_train_pics)
 max_len = max([len(i) for i in x_train_symbols])
 print(max_len)
-print(np.shape(x_train_pics)[1])
 
 
 def create_cnn(width, height, depth):
@@ -132,7 +137,8 @@ def create_cnn(width, height, depth):
 
 def create_mlp(dim):
     mlp_model = Sequential()
-    mlp_model.add(Dense(128, input_shape=(dim,), activation="relu"))
+    mlp_model.add(Masking(mask_value=0., input_shape=(dim,)))
+    mlp_model.add(Dense(128))
     mlp_model.add(Activation('relu'))
     mlp_model.add(Dropout(0.3))
     mlp_model.add(Dense(128))
@@ -151,12 +157,13 @@ model.compile(loss=keras.losses.mean_squared_error,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 # train the model
+log_dir = ".\\tensorboard\\logs\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 model.fit(
     x=[np.array(x_train_symbols), np.array(x_train_pics)], y=np.array(y_train_symbols_sorted),
-    epochs=30, batch_size=4, verbose=1)
+    epochs=20, batch_size=4, verbose=1, callbacks=[tensorboard_callback])
 
 model.save('../../model_sorting_weights/model_weights.h5')
-
 
 pathToTrainImage = '../../FlowchartDataMRCNN/TestingImages/00000077.jpg'
 x_test_pics = []
@@ -176,5 +183,7 @@ y_test_symbols_sorted = [[1, 2, 5, 2, 5, 2, 4, 2, 5, 2, 6, 2, 0, 0, 0,
 
 prediction = model.predict([np.asarray(y_test_symbols_unsorted), np.asarray(x_test_pics)])
 print(prediction)
+print(len(y_test_symbols_sorted))
+print(len(prediction))
 print([np.asarray(y_test_symbols_unsorted).reshape(max_len, )
        [np.abs(np.asarray(y_test_symbols_unsorted).reshape(max_len, ) - i).argmin()] for i in list(prediction[0])])
