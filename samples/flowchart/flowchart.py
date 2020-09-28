@@ -64,7 +64,7 @@ class FlowchartConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 11  # Background + flowchart symbols
@@ -74,6 +74,9 @@ class FlowchartConfig(Config):
 
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
+
+    #IMAGE_MIN_DIM = 400
+    #IMAGE_MAX_DIM = 512
 
 
 ############################################################
@@ -88,7 +91,7 @@ class FlowchartDataset(utils.Dataset):
         subset: Subset to load: TrainingImages or TestingImages
         """
 
-        flowchart_symbols = ["terminal_start", "flowline", "input", "decision", "process", "terminal_end",
+        flowchart_symbols = ["terminal_start", "flowline", "input", "condition", "process", "terminal_end",
                              "process_end", "process_start", "connector", "document", "terminal"]
         i = 0
         for symbol in flowchart_symbols:
@@ -184,7 +187,7 @@ class FlowchartDataset(utils.Dataset):
                 class_ids[i] = 2
             elif p['flowchart_symbols'] == 'input':
                 class_ids[i] = 3
-            elif p['flowchart_symbols'] == 'decision':
+            elif p['flowchart_symbols'] == 'condition':
                 class_ids[i] = 4
             elif p['flowchart_symbols'] == 'process':
                 class_ids[i] = 5
@@ -229,11 +232,10 @@ def train(model):
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
-    print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=30,
-                layers='heads')
+                layers='3+')
 
 
 def color_splash(image, mask):

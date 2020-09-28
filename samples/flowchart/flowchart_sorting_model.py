@@ -38,13 +38,13 @@ def load_descriptions(data):
     return sorted_flowchart_array
 
 
-filename = '../../FlowchartDataMRCNN/TrainingImages/flowchart_symbol_order.txt'
+filename = './TrainingImages/flowchart_symbol_order.txt'
 doc = load_doc(filename)
 sorted_array = load_descriptions(doc)
 
 flowcharts_symbols_array = []
 
-annotations = json.load(open('../../FlowchartDataMRCNN/TrainingImages/via_region_data.json'))
+annotations = json.load(open('./TrainingImages/via_region_data.json'))
 annotations = list(annotations.values())  # don't need the dict keys
 
 annotations = [a for a in annotations if a['regions']]
@@ -53,7 +53,7 @@ for a in annotations:
     single_flowchart_symbol_array = []
     flowchart_symbols = [r['region_attributes'] for r in a['regions']]
 
-    image_path = os.path.join('../../FlowchartDataMRCNN/TrainingImages/via_region_data.json', a['filename'])
+    image_path = os.path.join('./TrainingImages/via_region_data.json', a['filename'])
 
     for i, p in enumerate(flowchart_symbols):
 
@@ -63,7 +63,7 @@ for a in annotations:
             single_flowchart_symbol_array.insert(i, 2)
         elif p['flowchart_symbols'] == 'input':
             single_flowchart_symbol_array.insert(i, 3)
-        elif p['flowchart_symbols'] == 'decision':
+        elif p['flowchart_symbols'] == 'condition':
             single_flowchart_symbol_array.insert(i, 4)
         elif p['flowchart_symbols'] == 'process':
             single_flowchart_symbol_array.insert(i, 5)
@@ -89,7 +89,7 @@ y_train_symbols_sorted = tf.keras.preprocessing.sequence.pad_sequences(
     sorted_array, padding="post"
 )
 
-pathToTrainImages = '../../FlowchartDataMRCNN/TrainingImages/'
+pathToTrainImages = './TrainingImages/'
 img_names = glob.glob(pathToTrainImages + '*.jpg')
 
 train_images = []
@@ -116,8 +116,6 @@ print(max_len)
 
 
 def create_cnn(width, height, depth):
-    # initialize the input shape and channel dimension, assuming
-    # TensorFlow/channels-last ordering
     input_shape = (height, width, depth)
     cnn_model = Sequential()
     cnn_model.add(Conv2D(32, kernel_size=(3, 3),
@@ -163,9 +161,9 @@ model.fit(
     x=[np.array(x_train_symbols), np.array(x_train_pics)], y=np.array(y_train_symbols_sorted),
     epochs=20, batch_size=4, verbose=1, callbacks=[tensorboard_callback])
 
-model.save('../../model_sorting_weights/model_weights.h5')
+model.save('../../model_sorting_weights/sorting_model.h5')
 
-pathToTrainImage = '../../FlowchartDataMRCNN/TestingImages/00000077.jpg'
+pathToTrainImage = '../../FlowchartDataMRCNN/TestingImages/flowchartTest1.jpg'
 x_test_pics = []
 img = image.load_img(pathToTrainImage, color_mode='grayscale', target_size=(250, 250))
 # print(np.shape(img))
@@ -173,13 +171,15 @@ img = image.load_img(pathToTrainImage, color_mode='grayscale', target_size=(250,
 x = image.img_to_array(img)
 x_test_pics.append(x)
 
-y_test_symbols_unsorted = [[6, 1, 5, 5, 5, 2, 4, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
+y_test_symbols_unsorted = [[6, 2, 2, 2, 1, 2, 5, 5, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-y_test_symbols_sorted = [[1, 2, 5, 2, 5, 2, 4, 2, 5, 2, 6, 2, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+y_test_symbols_sorted = [[1, 2, 4, 2, 5, 2, 2, 5, 2, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+result = [2, 4, 2, 2, 0, 2, 4, 2, 4, 0, 1, 1, 0, 2, 2, 0, 2, 0, 0, 4,
+          1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 2, 0, 1, 2, 0, 0, 0, 0]
 
 prediction = model.predict([np.asarray(y_test_symbols_unsorted), np.asarray(x_test_pics)])
 print(prediction)
