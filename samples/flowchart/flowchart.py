@@ -75,8 +75,8 @@ class FlowchartConfig(Config):
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
 
-    #IMAGE_MIN_DIM = 400
-    #IMAGE_MAX_DIM = 512
+    IMAGE_MIN_DIM = 400
+    IMAGE_MAX_DIM = 512
 
 
 ############################################################

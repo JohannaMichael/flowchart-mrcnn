@@ -161,7 +161,7 @@ model.fit(
     x=[np.array(x_train_symbols), np.array(x_train_pics)], y=np.array(y_train_symbols_sorted),
     epochs=20, batch_size=4, verbose=1, callbacks=[tensorboard_callback])
 
-model.save('../../model_sorting_weights/sorting_model.h5')
+model.save('../../sorting_model.h5')
 
 pathToTrainImage = '../../FlowchartDataMRCNN/TestingImages/flowchartTest1.jpg'
 x_test_pics = []
