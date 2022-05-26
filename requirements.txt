@@ -9,4 +9,4 @@ opencv-python
 h5py
 imgaug
 IPython[all]
-tensorflow==1.15.4
+tensorflow==2.7.2
